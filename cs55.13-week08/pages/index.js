@@ -5,41 +5,53 @@ import {
   withAuthUserTokenSSR,
 } from 'next-firebase-auth'
 import Header from '../components/Header'
-import DemoPageLinks from '../components/DemoPageLinks'
+//import Head from 'next/head';
+import Link from 'next/link';
+//import Layout from '../components/layout';
+import { getSortedList } from '../lib/data';
 
-const styles = {
-  content: {
-    padding: 32,
-  },
-  infoTextContainer: {
-    marginBottom: 32,
-  },
+export async function getStaticProps() {
+  const allData = await getSortedList();
+  const getProps = withAuthUserTokenSSR()();
+  return {
+    props: {
+      allData,
+      getProps
+    }
+  }
 }
 
-const Demo = () => {
-  const AuthUser = useAuthUser()
+const Home = ({ allData }) => {
   return (
-    <div>
+      <Layout home>
+        <h1>List of Post Names</h1>
+        <div className="list-group">
+          {allData.map(({ id, name }) => (
+            <Link key={id} href={`/${id}`}>
+              <a className="list-group-item list-group-item-action">{name}</a>
+            </Link>
+          ))}
+        </div>
+        <div>
       <Header email={AuthUser.email} signOut={AuthUser.signOut} />
       <div style={styles.content}>
         <div style={styles.infoTextContainer}>
-          <h3>Home</h3>
-          <p>
-            This page does not require authentication, so it won't redirect to
-            the login page if you are not signed in.
-          </p>
-          <p>
-            If you remove `getServerSideProps` from this page, it will be static
-            and load the authed user only on the client side.
-          </p>
           <a href="/todo" style={{ fontSize: "40px", textDecoration: 'underline' }}>Add a todo!</a>
         </div>
-        <DemoPageLinks />
+         <h1>List of Post Names</h1>
+        <div className="list-group">
+          {allData.map(({ id, name }) => (
+            <Link key={id} href={`/${id}`}>
+              <a className="list-group-item list-group-item-action">{name}</a>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
-  )
+      </Layout>
+  );
 }
 
-export const getServerSideProps = withAuthUserTokenSSR()()
+//export const getServerSideProps = withAuthUserTokenSSR()()
 
-export default withAuthUser()(Demo)
+export default withAuthUser()(Home)
